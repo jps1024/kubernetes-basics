@@ -1,0 +1,113 @@
+
+##
+## foo-bar-system
+##
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: foo-bar-system
+
+
+##
+## Foo
+##
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: foo-app
+  namespace: foo-bar-system
+  labels:
+    app: foo
+spec:
+  containers:
+    - name: foo-app
+      image: docker.io/hashicorp/http-echo:0.2.3
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 5678
+      args:
+        - "-text=This is foo, through an Ingress Controller"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: foo-service
+  namespace: foo-bar-system
+spec:
+  selector:
+    app: foo
+  ports:
+    - targetPort: 5678
+      port: 80
+
+
+##
+## Bar
+##
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bar-app
+  namespace: foo-bar-system
+  labels:
+    app: bar
+spec:
+  containers:
+    - name: bar-app
+      image: docker.io/hashicorp/http-echo:0.2.3
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 5678
+      args:
+        - "-text=This is bar, through an Ingress Controller"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bar-service
+  namespace: foo-bar-system
+spec:
+  selector:
+    app: bar
+  ports:
+    - targetPort: 5678
+      port: 80
+
+
+##
+## Ingress
+##
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: foo-bar-ingress
+  namespace: foo-bar-system
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /foo
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: foo-service
+            port:
+              number: 80
+      - path: /bar
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: bar-service
+            port:
+              number: 80
+

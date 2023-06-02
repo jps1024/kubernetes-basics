@@ -1,0 +1,122 @@
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nature-rs-system
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config
+  namespace: nature-rs-system
+data:
+  key1: value1
+  key2: value2
+  content_location: http://naturebucket0278.s3.eu-west-1.amazonaws.com
+  content_file: pics-for-nature.zip
+
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nature-rs
+  namespace: nature-rs-system
+spec:
+  selector:
+    matchLabels:
+      app: nature-rs-nginx
+  replicas: 3 
+  template:
+    metadata:
+      labels:
+        app: nature-rs-nginx
+    spec:
+      initContainers:
+        - name: data-getter
+          image: docker.io/alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - bin/sh
+            - -c
+            - |
+              cd /data
+              wget -o log ${CONTENT_LOCATION}/${CONTENT_FILE}
+              unzip -q ${CONTENT_FILE}
+              rm ${CONTENT_FILE}
+              mv pics nature-rs
+              touch index.html ${KEY1} ${KEY2}
+          env:
+            - name: KEY1
+              valueFrom:
+                configMapKeyRef:
+                  name: config
+                  key: key1
+            - name: KEY2
+              valueFrom:
+                configMapKeyRef:
+                  name: config
+                  key: key2
+            - name: CONTENT_LOCATION
+              valueFrom:
+                configMapKeyRef:
+                  name: config
+                  key: content_location
+            - name: CONTENT_FILE
+              valueFrom:
+                configMapKeyRef:
+                  name: config
+                  key: content_file
+          volumeMounts:
+            - name: vol01
+              mountPath: /data/
+      containers:
+        - name: data-server
+          image: docker.io/nginx:1.21.3
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: vol01
+              mountPath: /usr/share/nginx/html
+            - name: config-volume
+              mountPath: /not-used-for-anything
+      volumes:
+        - name: vol01
+          emptyDir: {}
+        - name: config-volume
+          configMap:
+            name: config
+            optional: true   # won't prevent the pod from starting, in case the CM doesn't exist
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nature-rs-svc
+  namespace: nature-rs-system
+spec:
+  selector:
+    app: nature-rs-nginx
+  ports:
+    - targetPort: 80
+      port: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nature-rs-ingress
+  namespace: nature-rs-system
+spec:
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: /nature-rs
+            backend:
+              service:
+                name: nature-rs-svc
+                port:
+                  number: 80

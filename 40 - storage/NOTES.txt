@@ -1,0 +1,25 @@
+
+================
+  Storage
+================
+
+
+## 
+## Replica Set, where each pod populates a volume of ephemeral storage with files in 1 min intervals
+## Stateful Set, where each pod requests its own PVC/PV using a volume claim template
+##
+kc apply -f 41-multi-storage.yaml
+kc config set-context --current --namespace=storage-tests
+
+
+## 
+## Replica Set, where each pod populates a volume of ephemeral storage with files in 1 min intervals
+## Stateful Set, where all the pods share the same PVC (which will result in a single shared PV)
+##
+kc apply -f 42-multi-storage.yaml
+kc config set-context --current --namespace=storage-tests-2
+
+##
+## Minor variation, writing data to stdout to generate logs
+##
+kc apply -f 43-multi-storage.yaml

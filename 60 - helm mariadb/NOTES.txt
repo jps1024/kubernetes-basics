@@ -1,0 +1,84 @@
+
+«« PART 1 »»
+«« Standard MariaDB Helm chart deployment in replication mode »»
+
+helm repo add bitnami https://charts.bitnami.com/bitnami
+
+helm show chart bitnami/mariadb --version 11.4.4
+helm show values bitnami/mariadb --version 11.4.4 > values-11.4.4.yaml
+
+helm pull bitnami/mariadb --version 11.4.4
+helm pull bitnami/mariadb --version 11.4.4 --untar
+
+helm install mymaria bitnami/mariadb --version 11.4.4 -f values-11.4.4-mymaria.yaml -n mariadb-system --create-namespace
+kc config set-context --current --namespace=mariadb-system
+helm history mymaria
+
+kubectl run mymaria-client --rm --tty -i                \
+            --restart='Never'                           \
+            --image docker.io/bitnami/mariadb:10.5.20   \
+            --namespace mariadb-system                  \
+            --command -- mysql -uroot -ppasswd878 -h mymaria-mariadb-primary database878
+
+kubectl run mymaria-client-0 --rm --tty -i              \
+            --restart='Never'                           \
+            --image docker.io/bitnami/mariadb:10.5.20   \
+            --namespace mariadb-system                  \
+            --command -- mysql -uuser878 -ppasswd878 -h mymaria-mariadb-primary database878
+
+kubectl run mymaria-client-1 --rm --tty -i              \
+            --restart='Never'                           \
+            --image docker.io/bitnami/mariadb:10.5.20   \
+            --namespace mariadb-system                  \
+            --command -- mysql -uuser878 -ppasswd878 -h mymaria-mariadb-secondary database878
+
+./create-data.sh | kubectl run mymaria-create --rm -i   \
+            --restart='Never'                           \
+            --image docker.io/bitnami/mariadb:10.5.20   \
+            --namespace mariadb-system                  \
+            --command -- mysql -uuser878 -ppasswd878 -h mymaria-mariadb-primary database878
+
+#################################
+######## Nokia lab ##############
+#################################
+kubectl run mymaria-client-1 --rm --tty -i                                                       \
+            --restart='Never'                                                                    \
+            --image registry1-docker-io.repo.lab.pl.alcatel-lucent.com/bitnami/mariadb:10.5.20   \
+            --namespace mariadb-system                                                           \
+            --command -- mysql -uuser878 -ppasswd878 -h mymaria-mariadb-secondary database878
+
+./create-data.sh | kubectl run mymaria-create --rm -i                                            \
+            --restart='Never'                                                                    \
+            --image registry1-docker-io.repo.lab.pl.alcatel-lucent.com/bitnami/mariadb:10.5.20   \
+            --namespace mariadb-system                                                           \
+            --command -- mysql -uuser878 -ppasswd878 -h mymaria-mariadb-primary database878
+#################################
+
+SQL queries:
+    USE database878;
+    SHOW TABLES;
+    SELECT * FROM TBL01;
+    DESCRIBE TBL01;
+    SELECT COUNT(*) from TBL01;
+    DROP TABLE TBL01;
+
+
+«« PART 2 »»
+«« Addition of metrics generation, ready to be scraped by Prometheus »»
+
+helm delete mymaria -n mariadb-system
+kc delete ns mariadb-system
+helm install mymaria bitnami/mariadb --version 11.4.4 -f values-11.4.4-mymaria-prometheus.yaml -n mariadb-system --create-namespace
+
+kubectl run alpinecurl --rm --tty -i            \
+            --restart='Never'                   \
+            --image docker.io/alpine/curl:3.14  \
+            --namespace default                 \
+            --command -- curl http://mymaria-mariadb-primary.mariadb-system.svc.cluster.local:9104/metrics
+
+grep -v '#' mariadb-metrics
+
+Interesting metrics to watch:
+    mysql_global_status_commands_total{command="insert"}
+    rate(mysql_global_status_commands_total{command="insert"}[1m])
+    mysql_global_status_memory_used

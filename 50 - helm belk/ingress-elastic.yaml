@@ -1,0 +1,72 @@
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: elastic-ingress
+  namespace: elastic-system
+spec:
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: /elastic
+            backend:
+              service:
+                name: es-elasticsearch
+                port:
+                  number: 9200
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: regs-ingress
+  namespace: elastic-system
+spec:
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: /regs
+            backend:
+              service:
+                name: es-elasticsearch
+                port:
+                  number: 9200
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kibana-ingress
+  namespace: elastic-system
+spec:
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: /kibana
+            backend:
+              service:
+                name: ki-kibana
+                port:
+                  number: 5601
+
+#---
+#apiVersion: projectcontour.io/v1
+#kind: HTTPProxy
+#metadata:
+#  name: kibana-rewrite
+#  namespace: elastic-system
+#spec:
+#  virtualhost:
+#    fqdn: localhost
+#  routes:
+#  - services:
+#    - name: ki-kibana
+#      port: 5601
+#    pathRewritePolicy:
+#      replacePrefix:
+#      - prefix: /kibana
+#        replacement: /

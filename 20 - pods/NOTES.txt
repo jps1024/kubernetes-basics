@@ -1,0 +1,28 @@
+
+=========================================
+  Pods, Services and IngressControllers
+=========================================
+
+
+##
+## Simple pods, with their respective internal services, and where those services are
+## exposed to the outside of the cluster through an Ingress Controller
+##
+kc apply -f 21-foo-bar.yaml
+kc get all -n foo-bar-system
+kc config set-context --current --namespace=foo-bar-system
+kc get all -o wide
+curl http://localhost:8080/foo
+curl http://localhost:8080/bar
+curl http://localhost:8080/dummy
+kc get ingress.networking.k8s.io
+kc describe ingress.networking.k8s.io/foo-bar-ingress
+
+
+##
+## A variant of the previous one, with the only difference that the services are headless
+## whereby a stable internal IP address is not assigned to the service; instead, clients
+## are redirected directly to the pod(s) implementing the service
+##
+kc delete ns foo-bar-system
+kc apply -f 22-headless-foo-bar.yaml

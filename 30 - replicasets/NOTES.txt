@@ -1,0 +1,59 @@
+
+===============
+  ReplicaSets
+===============
+
+
+##
+## Replica Sets -- a static web site with ephemeral storage with content downloaded from the Internet;
+## the content is expanded and replicated on each replicated pod
+##
+kc apply -f 31-nature-rs.yaml
+kc config set-context --current --namespace=nature-rs-system
+kc get all -o wide
+kc delete pod/nature-rs-z4dnd
+kc exec -it pod/nature-rs-qxstx -- bash
+kc scale replicaset.apps/nature-rs --replicas=20
+kc get all -o wide
+curl http://localhost:8080/nature-rs/
+kc drain k2-worker3 --ignore-daemonsets --delete-emptydir-data
+kc get all -o wide
+kc get nodes
+kc uncordon k2-worker3
+
+
+##
+## Replica Set with a Config Map
+##
+kc delete ns nature-rs-system
+kc apply -f 32-nature-rs.yaml
+kc describe cm/config
+kc get cm/config -o yaml
+kc get cm/config -o json
+kc edit cm/config
+
+
+##
+## Identical Replica Set, with an headless service
+##
+kc delete ns nature-rs-system
+kc apply -f 33-nature-rs.yaml
+kc describe service/nature-rs-svc
+
+
+##
+## Replica Set where each pod provides two services; the second service is implemented by NGINX which
+## is reconfigured through a specific config map
+##
+kc delete ns nature-rs-system
+kc apply -f 34-nature-rs.yaml
+curl http://localhost:8080/nature-rs/
+curl http://localhost:8080/nature-rs-podname/
+
+
+##
+## Replica Set where each pod gets its content, not from the Internet, but from an internal service;
+## this internal service gets the content from the Internet, doesn't expand it, and serves it internally
+##
+kc delete ns nature-rs-system
+kc apply -f 35-nature-rs.yaml

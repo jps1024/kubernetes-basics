@@ -1,0 +1,90 @@
+
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: storage-tests-2
+
+---
+kind: ReplicaSet
+apiVersion: apps/v1
+metadata:
+  name: replica-app
+  namespace: storage-tests-2
+spec:
+  selector:
+    matchLabels:
+      app: rs-app-selector
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: rs-app-selector
+    spec:
+      containers:
+        - name: rs-app-container
+          image: docker.io/alpine
+          args:
+            - /bin/sh
+            - -c
+            - |
+              while : ; do
+                 F="`hostname`__`date \"+%T\"`"
+                 touch "/rs-data/${F}"
+                 sleep 60
+              done
+          volumeMounts:
+            - name: volume-rs
+              mountPath: /rs-data
+      volumes:
+        - name: volume-rs
+          emptyDir: {}     # Ephemeral storage
+
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: stateful-app
+  namespace: storage-tests-2
+spec:
+  selector:
+    matchLabels:
+      app: sts-app-selector
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: sts-app-selector
+    spec:
+      containers:
+        - name: sts-app-container
+          image: docker.io/alpine
+          args:
+            - /bin/sh
+            - -c
+            - |
+              while : ; do
+                F="`hostname`__`date \"+%T\"`"
+                touch "/sts-data/${F}"
+                sleep 60
+              done
+          volumeMounts:
+            - name: volume-sts
+              mountPath: /sts-data
+      volumes:
+        - name: volume-sts
+          persistentVolumeClaim:
+            claimName: pvc-sts
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-sts
+  namespace: storage-tests-2
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Mi

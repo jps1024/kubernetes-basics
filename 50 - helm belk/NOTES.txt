@@ -1,0 +1,85 @@
+
+BELK
+  Beats         -- collect and send data to Elasticsearch and/or Logstash
+  Elasticsearch -- index and fast text search
+  Logstash      -- process, filter and transform logs
+  Kibana        -- visualization UI
+
+helm repo add bitnami https://charts.bitnami.com/bitnami 
+
+helm show chart bitnami/elasticsearch
+helm show chart bitnami/kibana
+
+helm show readme bitnami/elasticsearch
+helm show readme bitnami/kibana
+
+helm show values bitnami/elasticsearch > values-bitnami-elasticsearch--ORIGINAL.yaml
+helm show values bitnami/kibana > values-bitnami-kibana--ORIGINAL.yaml
+
+
+helm install es bitnami/elasticsearch -f values-bitnami-elasticsearch.yaml -n elastic-system --create-namespace
+helm install ki bitnami/kibana -f values-bitnami-kibana.yaml -n elastic-system
+kubectl apply -f ingress-elastic.yaml
+kubectl apply -f filebeat-kubernetes.yaml
+
+
+kc config set-context --current --namespace=elastic-system
+
+kubectl port-forward --namespace elastic-system svc/es-elasticsearch 9200:9200 & curl http://127.0.0.1:9200/
+
+
+curl -X POST "localhost:9200/customer/_doc/1" -H 'Content-Type: application/json' -d'
+{
+  "firstname": "Jennifer",
+  "lastname": "Walters"
+}
+'
+curl -X GET "localhost:9200/customer/_doc/1"
+
+curl -X PUT "localhost:9200/customer/_bulk" -H 'Content-Type: application/json' -d'
+{ "create": { } }
+{ "firstname": "Monica","lastname":"Rambeau"}
+{ "create": { } }
+{ "firstname": "Carol","lastname":"Danvers"}
+{ "create": { } }
+{ "firstname": "Wanda","lastname":"Maximoff"}
+{ "create": { } }
+{ "firstname": "Jennifer","lastname":"Takeda"}
+'
+
+curl -X GET "localhost:9200/customer/_search" -H 'Content-Type: application/json' -d'
+{
+  "query" : {
+    "match" : { "firstname": "Jennifer" }
+  }
+}
+'
+
+## POST is a create
+curl -X POST "http://localhost:8080/elastic/_doc/" -H 'Content-Type: application/json' -d'
+{
+  "firstname": "Jennifer",
+  "lastname": "Walters"
+}'
+curl -X GET "http://localhost:8080/elastic/_doc/1"
+
+curl -X PUT "http://localhost:8080/elastic/_bulk" -H 'Content-Type: application/json' -d'
+{ "create": { } }
+{ "firstname": "Monica","lastname":"Rambeau"}
+{ "create": { } }
+{ "firstname": "Carol","lastname":"Danvers"}
+{ "create": { } }
+{ "firstname": "Wanda","lastname":"Maximoff"}
+{ "create": { } }
+{ "firstname": "Jennifer","lastname":"Takeda"}
+'
+curl -X GET "http://localhost:8080/elastic/_search"
+
+curl -X GET "http://localhost:8080/elastic/_search" -H 'Content-Type: application/json' -d'
+{
+  "query" : {
+    "match" : { "firstname": "Jennifer" }
+  }
+}
+'
+

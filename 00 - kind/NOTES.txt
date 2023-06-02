@@ -1,0 +1,39 @@
+
+=====================
+  Kubernetes Basics
+=====================
+
+
+##
+## Motivation for Kubernetes
+## Single Docker container to run a local http server -- non-scalable, neither fault toleant solution
+##
+docker run -d --rm                                             \
+           -p 7777:80                                          \
+           -v /home/jps/src/Docker/pics:/usr/share/nginx/html  \
+           --name nginx-http-server                            \
+           nginx:1.21.3
+
+
+##
+## Start the Kind k8s cluster
+## (includes Project Contour and some needed patches)
+##
+./00-start-kind.sh
+cat 01-kind-config.yaml
+docker ps
+
+
+##
+## Stop the Kind cluster
+##
+./09-stop-kind.sh
+
+
+##
+## Check the initial status of the cluster
+##
+kc get nodes
+kc get ns
+kc get pods -A
+
