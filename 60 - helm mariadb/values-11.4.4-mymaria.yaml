@@ -127,7 +127,7 @@ auth:
   ## @param auth.replicationPassword MariaDB replication user password. Ignored if existing secret is provided
   ## ref: https://github.com/bitnami/containers/tree/main/bitnami/mariadb#setting-up-a-replication-cluster
   ##
-  replicationPassword: ""
+  replicationPassword: "justreplicateit"
   ## @param auth.existingSecret Use existing secret for password details (`auth.rootPassword`, `auth.password`, `auth.replicationPassword` will be ignored and picked up from this secret). The secret has to contain the keys `mariadb-root-password`, `mariadb-replication-password` and `mariadb-password`
   ##
   existingSecret: ""
@@ -153,7 +153,10 @@ auth:
 ##      #!/bin/bash
 ##      echo "Do something."
 ##
-initdbScripts: {}
+initdbScripts:
+  init_database878.sh: |
+    #!/bin/bash
+    echo "CREATE TABLE TBL01 (COL01 char(10), COL02 char(10), COL03 char(10), COL04 char(10));" | mysql -uuser878 -ppasswd878 database878
 ## @param initdbScriptsConfigMap ConfigMap with the initdb scripts (Note: Overrides `initdbScripts`)
 ##
 initdbScriptsConfigMap: ""

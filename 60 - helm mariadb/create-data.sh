@@ -14,7 +14,7 @@ function randomstring10() {
 ## START OF THE SCRIPT
 ##
 echo "CREATE TABLE IF NOT EXISTS TBL01 (COL01 char(10), COL02 char(10), COL03 char(10), COL04 char(10));"
-for (( i=0; i<30300; i++ )); do
+for (( i=0; i<20200; i++ )); do
     a=$(randomstring10)
     b=$(randomstring10)
     c=$(randomstring10)
