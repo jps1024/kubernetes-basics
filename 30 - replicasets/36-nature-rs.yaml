@@ -1,0 +1,187 @@
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nature-rs-system
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap01
+  namespace: nature-rs-system
+data:
+  content_location: http://naturebucket0278.s3.eu-west-1.amazonaws.com
+  content_file: pics-for-nature.zip
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap02
+  namespace: nature-rs-system
+data:
+  default.conf: |
+      server {
+        listen       90;
+        listen  [::]:90;
+        server_name  localhost;
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+        }
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   /usr/share/nginx/html;
+        }
+      }
+
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nature-rs
+  namespace: nature-rs-system
+spec:
+  selector:
+    matchLabels:
+      app: nature-rs-nginx
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: nature-rs-nginx
+    spec:
+      initContainers:
+        - name: data-getter
+          image: docker.io/alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - bin/sh
+            - -c
+            - |
+              cd /data01
+              wget -o log ${CONTENT_LOCATION}/${CONTENT_FILE}
+              unzip -q ${CONTENT_FILE}
+              rm ${CONTENT_FILE}
+              mv pics nature-rs
+              touch index.html
+              cd /data02
+              mkdir nature-rs-podname
+              echo "This response, courtesy of pod \"`hostname`\"" > nature-rs-podname/index.html
+          env:
+            - name: CONTENT_LOCATION
+              valueFrom:
+                configMapKeyRef:
+                  name: configmap01
+                  key: content_location
+            - name: CONTENT_FILE
+              valueFrom:
+                configMapKeyRef:
+                  name: configmap01
+                  key: content_file
+          volumeMounts:
+            - name: vol01
+              mountPath: /data01/
+            - name: vol02
+              mountPath: /data02/
+      containers:
+        - name: data-server01
+          image: docker.io/nginx:1.21.3
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: vol01
+              mountPath: /usr/share/nginx/html
+            - name: config-volume01
+              mountPath: /not-used-for-anything
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+        - name: data-server02
+          image: docker.io/nginx:1.21.3
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 90
+          volumeMounts:
+            - name: vol02
+              mountPath: /usr/share/nginx/html
+            - name: config-volume02
+              mountPath: /etc/nginx/conf.d
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+      volumes:
+        - name: vol01
+          emptyDir: {}
+        - name: vol02
+          emptyDir: {}
+        - name: config-volume01
+          configMap:
+            name: configmap01
+            optional: true   # won't prevent the pod from starting, in case the CM doesn't exist
+        - name: config-volume02
+          configMap:
+            name: configmap02
+            optional: false
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nature-rs-svc01
+  namespace: nature-rs-system
+spec:
+  selector:
+    app: nature-rs-nginx
+  ports:
+    - targetPort: 80
+      port: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nature-rs-svc02
+  namespace: nature-rs-system
+spec:
+  selector:
+    app: nature-rs-nginx
+  ports:
+    - targetPort: 90
+      port: 90
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nature-rs-ingress
+  namespace: nature-rs-system
+spec:
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: /nature-rs
+            backend:
+              service:
+                name: nature-rs-svc01
+                port:
+                  number: 80
+          - pathType: Prefix
+            path: /nature-rs-podname
+            backend:
+              service:
+                name: nature-rs-svc02
+                port:
+                  number: 90

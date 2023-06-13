@@ -57,3 +57,13 @@ curl http://localhost:8080/nature-rs-podname/
 ##
 kc delete ns nature-rs-system
 kc apply -f 35-nature-rs.yaml
+
+
+##
+## Identical to 34-nature-rs.yaml, but with CPU/mem requests and limits
+##
+kc delete ns nature-rs-system
+kc apply -f 36-nature-rs.yaml
+kc get pod/nature-rs-2q47c -o=jsonpath='{.spec.containers[].resources.limits.cpu}'
+kc get pod/nature-rs-2q47c -o=jsonpath='{.spec.containers[0].resources.limits.cpu}'
+kc get pod/nature-rs-2q47c -o=jsonpath='{.spec.containers[*].resources.limits.cpu}'

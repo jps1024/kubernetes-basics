@@ -121,6 +121,9 @@ data:
             matchers:
             - logs_path:
                 logs_path: "/var/log/containers/"
+    - type: log
+      paths:
+        - /var/log/containers/*app*.log
 
     # To enable hints based autodiscover, remove `filebeat.inputs` configuration and uncomment this:
     #filebeat.autodiscover:
@@ -132,6 +135,15 @@ data:
     #        type: container
     #        paths:
     #          - /var/log/containers/*${data.kubernetes.container.id}.log
+
+    filebeat.modules:
+    - module: mysql
+      error:
+        enabled: true
+        var.paths: ["/var/log/containers/*mariadb*.log"]
+      slowlog:
+        enabled: true
+        var.paths: ["/var/log/containers/*mariadb*.log"]
 
     processors:
       - add_cloud_metadata:
@@ -229,4 +241,3 @@ spec:
           # When filebeat runs as non-root user, this directory needs to be writable by group (g+w).
           path: /var/lib/filebeat-data
           type: DirectoryOrCreate
----
