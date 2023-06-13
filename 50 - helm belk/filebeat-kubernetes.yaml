@@ -144,6 +144,10 @@ data:
       slowlog:
         enabled: true
         var.paths: ["/var/log/containers/*mariadb*.log"]
+    - module: nginx
+      access:
+        enabled: true
+        var.paths: ["/var/log/containers/nature-rs*.log"]
 
     processors:
       - add_cloud_metadata:

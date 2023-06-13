@@ -19,9 +19,9 @@ helm show values bitnami/kibana > values-bitnami-kibana--ORIGINAL.yaml
 
 helm install es bitnami/elasticsearch -f values-bitnami-elasticsearch.yaml -n elastic-system --create-namespace
 helm install ki bitnami/kibana -f values-bitnami-kibana.yaml -n elastic-system
+kc config set-context --current --namespace=elastic-system
 kubectl apply -f ingress-elastic.yaml
 kubectl apply -f filebeat-kubernetes.yaml
-kc config set-context --current --namespace=elastic-system
 kubectl port-forward --namespace elastic-system svc/es-elasticsearch 9200:9200 & curl http://127.0.0.1:9200/
 
 
