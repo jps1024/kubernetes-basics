@@ -35,19 +35,19 @@ curl -X GET "localhost:9200/customer/_doc/1"
 
 curl -X PUT "localhost:9200/customer/_bulk" -H 'Content-Type: application/json' -d'
 { "create": { } }
-{ "firstname": "Monica","lastname":"Rambeau"}
+{ "firstname":"Monica","lastname":"Rambeau"}
 { "create": { } }
-{ "firstname": "Carol","lastname":"Danvers"}
+{ "firstname":"Carol","lastname":"Danvers"}
 { "create": { } }
-{ "firstname": "Wanda","lastname":"Maximoff"}
+{ "firstname":"Wanda","lastname":"Maximoff"}
 { "create": { } }
-{ "firstname": "Jennifer","lastname":"Takeda"}
+{ "firstname":"Jennifer","lastname":"Takeda"}
 '
 
 curl -X GET "localhost:9200/customer/_search" -H 'Content-Type: application/json' -d'
 {
   "query" : {
-    "match" : { "firstname": "Jennifer" }
+    "match" : { "firstname":"Jennifer" }
   }
 }
 '
@@ -62,21 +62,20 @@ curl -X GET "http://localhost:8080/elastic/_doc/1"
 
 curl -X PUT "http://localhost:8080/elastic/_bulk" -H 'Content-Type: application/json' -d'
 { "create": { } }
-{ "firstname": "Monica","lastname":"Rambeau"}
+{ "firstname":"Monica","lastname":"Rambeau"}
 { "create": { } }
-{ "firstname": "Carol","lastname":"Danvers"}
+{ "firstname":"Carol","lastname":"Danvers"}
 { "create": { } }
-{ "firstname": "Wanda","lastname":"Maximoff"}
+{ "firstname":"Wanda","lastname":"Maximoff"}
 { "create": { } }
-{ "firstname": "Jennifer","lastname":"Takeda"}
+{ "firstname":"Jennifer","lastname":"Takeda"}
 '
 curl -X GET "http://localhost:8080/elastic/_search"
 
 curl -X GET "http://localhost:8080/elastic/_search" -H 'Content-Type: application/json' -d'
 {
   "query" : {
-    "match" : { "firstname": "Jennifer" }
+    "match" : { "firstname":"Jennifer" }
   }
 }
 '
-
