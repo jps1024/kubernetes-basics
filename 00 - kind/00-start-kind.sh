@@ -10,7 +10,7 @@ kind create cluster --name ${CLUSTERNAME} --config ${KINDCONFIG} --image docker.
 
 echo
 echo "Applying Project Contour to the k8s cluster"
-kubectl apply -f https://projectcontour.io/quickstart/contour.yaml
+kubectl apply -f contour.yaml
 
 echo
 echo "Patching Project Contour for Kind-specifics"
