@@ -35,7 +35,7 @@ spec:
     spec:
       initContainers:
         - name: data-getter
-          image: docker.io/alpine
+          image: docker.io/busybox:1.37.0
           imagePullPolicy: IfNotPresent
           command:
             - bin/sh

@@ -48,7 +48,7 @@ metadata:
 spec:
   initContainers:
     - name: data-getter
-      image: docker.io/alpine
+      image: docker.io/busybox:1.37.0
       imagePullPolicy: IfNotPresent
       command:
         - bin/sh
@@ -88,7 +88,7 @@ apiVersion: v1
 kind: Service
 metadata:
   # inside the cluster, this service is reachable on the following FQDN:
-  #  "internal-service.nature-rs-system.svc.cluster.local:80"
+  #       "internal-service.nature-rs-system.svc.cluster.local:80"
   name: internal-service
   namespace: nature-rs-system
 spec:
@@ -116,7 +116,7 @@ spec:
     spec:
       initContainers:
         - name: data-getter
-          image: docker.io/alpine
+          image: docker.io/busybox:1.37.0
           imagePullPolicy: IfNotPresent
           command:
             - bin/sh
