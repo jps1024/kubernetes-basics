@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: rs-app-container
-          image: docker.io/alpine
+          image: docker.io/alpine:3.20
           args:
             - /bin/sh
             - -c
@@ -57,7 +57,7 @@ spec:
     spec:
       containers:
         - name: sts-app-container
-          image: docker.io/alpine
+          image: docker.io/alpine:3.20
           args:
             - /bin/sh
             - -c

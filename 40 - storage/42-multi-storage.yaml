@@ -2,14 +2,14 @@
 kind: Namespace
 apiVersion: v1
 metadata:
-  name: storage-tests-2
+  name: storage-tests
 
 ---
 kind: ReplicaSet
 apiVersion: apps/v1
 metadata:
   name: replica-app
-  namespace: storage-tests-2
+  namespace: storage-tests
 spec:
   selector:
     matchLabels:
@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: rs-app-container
-          image: docker.io/alpine
+          image: docker.io/alpine:3.20
           args:
             - /bin/sh
             - -c
@@ -44,7 +44,7 @@ kind: StatefulSet
 apiVersion: apps/v1
 metadata:
   name: stateful-app
-  namespace: storage-tests-2
+  namespace: storage-tests
 spec:
   selector:
     matchLabels:
@@ -57,7 +57,7 @@ spec:
     spec:
       containers:
         - name: sts-app-container
-          image: docker.io/alpine
+          image: docker.io/alpine:3.20
           args:
             - /bin/sh
             - -c
@@ -80,7 +80,7 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: pvc-sts
-  namespace: storage-tests-2
+  namespace: storage-tests
 spec:
   storageClassName: standard
   accessModes:

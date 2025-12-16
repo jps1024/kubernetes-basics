@@ -26,6 +26,9 @@ kind   load docker-image busybox:1.37.0                                --name ${
 docker pull              docker.io/nginx:1.21.3
 kind   load docker-image docker.io/nginx:1.21.3                        --name ${CLUSTERNAME}
 
+docker pull              docker.io/alpine:3.20
+kind   load docker-image docker.io/alpine:3.20                         --name ${CLUSTERNAME}
+
 echo
 echo "Applying Project Contour to the k8s cluster"
 kubectl apply -f contour.yaml
