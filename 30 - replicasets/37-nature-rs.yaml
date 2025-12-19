@@ -54,9 +54,10 @@ spec:
         - bin/sh
         - -c
         - |
+          sleep 60
           cd /data01
-          #touch healthz  # for the readiness probe
-          wget -o log ${CONTENT_LOCATION}/${CONTENT_FILE}
+          touch healthz  # for the readiness probe
+          wget ${CONTENT_LOCATION}/${CONTENT_FILE}
       env:
         - name: CONTENT_LOCATION
           valueFrom:
@@ -82,7 +83,7 @@ spec:
         httpGet:
           path: /healthz
           port: readiness-port
-        initialDelaySeconds: 5  # give some time for NGINX to start
+        initialDelaySeconds: 1  # give some time for NGINX to start
         periodSeconds: 30
       volumeMounts:
         - name: internal-volume
@@ -133,7 +134,7 @@ spec:
               cd /data01
               count=1
               while : ; do
-                wget -o log "http://internal-service.nature-rs-system.svc.cluster.local:80/${CONTENT_FILE}"
+                wget "http://internal-service.nature-rs-system.svc.cluster.local:80/${CONTENT_FILE}"
                 if ( [ -f "${CONTENT_FILE}" ] || [ $count -gt 5 ] ) then break; fi
                 echo "Attempt ${count} at downloading ${CONTENT_FILE}, but failed"
                 sleep 5
