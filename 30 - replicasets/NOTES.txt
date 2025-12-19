@@ -75,3 +75,4 @@ kc logs nature-rs-2wlgv -c data-getter
 ##
 kc delete ns nature-rs-system
 kc apply -f 37-nature-rs.yaml
+while : ; do curl http://localhost:8080/nature-rs-podname/; sleep 1; done

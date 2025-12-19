@@ -117,7 +117,7 @@ spec:
   selector:
     matchLabels:
       app: nature-rs-nginx
-  replicas: 3
+  replicas: 2
   template:
     metadata:
       labels:
@@ -145,9 +145,11 @@ spec:
               rm ${CONTENT_FILE}
               mv pics nature-rs
               touch index.html
+              touch healthz
               cd /data02
               mkdir nature-rs-podname
               echo "This response, courtesy of pod \"`hostname`\"" > nature-rs-podname/index.html
+              touch healthz
           env:
             - name: CONTENT_FILE
               valueFrom:
@@ -164,7 +166,14 @@ spec:
           image: docker.io/nginx:1.21.3
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 80
+            - name: readiness-port
+              containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: readiness-port
+            initialDelaySeconds: 1  # give some time for NGINX to start
+            periodSeconds: 10
           volumeMounts:
             - name: vol01
               mountPath: /usr/share/nginx/html
@@ -174,7 +183,14 @@ spec:
           image: docker.io/nginx:1.21.3
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 90
+            - name: readiness-port
+              containerPort: 90
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: readiness-port
+            initialDelaySeconds: 1  # give some time for NGINX to start
+            periodSeconds: 10
           volumeMounts:
             - name: vol02
               mountPath: /usr/share/nginx/html
