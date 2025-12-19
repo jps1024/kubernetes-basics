@@ -54,7 +54,6 @@ spec:
         - bin/sh
         - -c
         - |
-          sleep 60
           cd /data01
           touch healthz  # for the readiness probe
           wget ${CONTENT_LOCATION}/${CONTENT_FILE}
