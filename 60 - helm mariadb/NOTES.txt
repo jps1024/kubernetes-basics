@@ -10,7 +10,10 @@ helm show values bitnami/mariadb --version 22.0.0 > values-22.0.0.yaml
 helm pull bitnami/mariadb --version 22.0.0
 helm pull bitnami/mariadb --version 22.0.0 --untar
 
+./load-images.sh  # optional
 helm install mymaria bitnami/mariadb --version 22.0.0 -f values-22.0.0-mymaria.yaml -n mariadb-system --create-namespace
+helm install mymaria bitnami/mariadb --version 22.0.0 -f values-22.0.0-mymaria-mini.yaml -n mariadb-system --create-namespace
+helm upgrade mymaria bitnami/mariadb --version 22.0.0 -f values-22.0.0-mymaria-mini.yaml -n mariadb-system
 
 kc config set-context --current --namespace=mariadb-system
 helm history mymaria
@@ -36,27 +39,17 @@ kubectl run mymaria-client-1 --rm --tty -i                                \
             --namespace mariadb-system                                    \
             --command -- mysql -uuser878 -ppasswd878 -h mymaria-mariadb-primary database878
 
+echo "SELECT COUNT(*) from TBL01;" | kubectl run mymaria-query --rm -i                        \
+            --restart='Never'                                                                 \
+            --image docker.io/bitnamilegacy/mariadb:12.0.2-debian-12-r0                       \
+            --namespace mariadb-system                                                        \
+            --command -- mysql -uuser878 -ppasswd878 -h mymaria-mariadb-primary database878
+
 echo "select COL01,COL02,COL03,COL04 from TBL01 where COL01=\"81446e1b9e\";" | kubectl run mymaria-query --rm -i  \
             --restart='Never'                                                                                     \
             --image docker.io/bitnamilegacy/mariadb:12.0.2-debian-12-r0                                           \
             --namespace mariadb-system                                                                            \
             --command -- mysql -uuser878 -ppasswd878 -h mymaria-mariadb-primary database878
-
-#################################
-######## Nokia lab ##############
-#################################
-kubectl run mymaria-client-1 --rm --tty -i                                                       \
-            --restart='Never'                                                                    \
-            --image registry1-docker-io.repo.lab.pl.alcatel-lucent.com/bitnami/mariadb:10.5.20   \
-            --namespace mariadb-system                                                           \
-            --command -- mysql -uuser878 -ppasswd878 -h mymaria-mariadb-secondary database878
-
-./create-data.sh | kubectl run mymaria-create --rm -i                                            \
-            --restart='Never'                                                                    \
-            --image registry1-docker-io.repo.lab.pl.alcatel-lucent.com/bitnami/mariadb:10.5.20   \
-            --namespace mariadb-system                                                           \
-            --command -- mysql -uuser878 -ppasswd878 -h mymaria-mariadb-primary database878
-#################################
 
 SQL queries:
     USE database878;
@@ -73,14 +66,14 @@ SQL queries:
 Option 1 (losing all existing DB data):
     helm delete mymaria -n mariadb-system
     kc delete ns mariadb-system
-    helm install mymaria bitnami/mariadb --version 11.4.4 -f values-11.4.4-mymaria-prometheus.yaml -n mariadb-system --create-namespace
+    helm install mymaria bitnami/mariadb --version 22.0.0 -f values-22.0.0-mymaria-mini-prometheus.yaml -n mariadb-system --create-namespace
 Or option2 (keeping DB data intact):
-    helm upgrade mymaria bitnami/mariadb --version 11.4.4 -f values-11.4.4-mymaria-prometheus.yaml -n mariadb-system
+    helm upgrade mymaria bitnami/mariadb --version 22.0.0 -f values-22.0.0-mymaria-mini-prometheus.yaml -n mariadb-system
 
 kubectl run alpinecurl --rm --tty -i            \
             --restart='Never'                   \
             --image docker.io/alpine/curl:3.14  \
-            --namespace default                 \
+            --namespace mariadb-system          \
             --command -- curl http://mymaria-mariadb-primary.mariadb-system.svc.cluster.local:9104/metrics
 
 grep -v '#' mariadb-metrics
@@ -88,9 +81,9 @@ grep -v '#' mariadb-metrics
 kubectl run alpinecurl --rm --tty -i            \
             --restart='Never'                   \
             --image docker.io/alpine/curl:3.14  \
-            --namespace default                 \
+            --namespace mariadb-system          \
             --command -- curl http://mymaria-mariadb-primary.mariadb-system.svc.cluster.local:9104/metrics | \
-grep --color=no 'mysql_global_status_memory_used' metrics | grep -v '#'
+grep --color=no 'mysql_global_status_memory_used' | grep -v '#'
 
 Interesting metrics to watch:
     mysql_global_status_commands_total{command="insert"}
