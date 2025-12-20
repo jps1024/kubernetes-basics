@@ -4,32 +4,42 @@
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
 
-helm show chart bitnami/mariadb --version 11.4.4
-helm show values bitnami/mariadb --version 11.4.4 > values-11.4.4.yaml
+helm show chart bitnami/mariadb --version 22.0.0
+helm show values bitnami/mariadb --version 22.0.0 > values-22.0.0.yaml
 
-helm pull bitnami/mariadb --version 11.4.4
-helm pull bitnami/mariadb --version 11.4.4 --untar
+helm pull bitnami/mariadb --version 22.0.0
+helm pull bitnami/mariadb --version 22.0.0 --untar
 
-helm install mymaria bitnami/mariadb --version 11.4.4 -f values-11.4.4-mymaria.yaml -n mariadb-system --create-namespace
+helm install mymaria bitnami/mariadb --version 22.0.0 -f values-22.0.0-mymaria.yaml -n mariadb-system --create-namespace
+
 kc config set-context --current --namespace=mariadb-system
 helm history mymaria
 
-kubectl run mymaria-client-0 --rm --tty -i                \
-            --restart='Never'                           \
-            --image docker.io/bitnami/mariadb:10.5.20   \
-            --namespace mariadb-system                  \
+helm delete mymaria -n mariadb-system
+kc delete ns mariadb-system
+
+kubectl run mymaria-client-0 --rm --tty -i                                \
+            --restart='Never'                                             \
+            --image docker.io/bitnamilegacy/mariadb:12.0.2-debian-12-r0   \
+            --namespace mariadb-system                                    \
             --command -- mysql -uroot -ppasswd878 -h mymaria-mariadb-primary database878
 
-kubectl run mymaria-client-1 --rm --tty -i              \
-            --restart='Never'                           \
-            --image docker.io/bitnami/mariadb:10.5.20   \
-            --namespace mariadb-system                  \
+kubectl run mymaria-client-1 --rm --tty -i                                \
+            --restart='Never'                                             \
+            --image docker.io/bitnamilegacy/mariadb:12.0.2-debian-12-r0   \
+            --namespace mariadb-system                                    \
             --command -- mysql -uuser878 -ppasswd878 -h mymaria-mariadb-secondary database878
 
-./create-data.sh | kubectl run mymaria-create --rm -i   \
-            --restart='Never'                           \
-            --image docker.io/bitnami/mariadb:10.5.20   \
-            --namespace mariadb-system                  \
+./insert-data.sh | kubectl run mymaria-inserter --rm -i                   \
+            --restart='Never'                                             \
+            --image docker.io/bitnamilegacy/mariadb:12.0.2-debian-12-r0   \
+            --namespace mariadb-system                                    \
+            --command -- mysql -uuser878 -ppasswd878 -h mymaria-mariadb-primary database878
+
+echo "select COL01,COL02,COL03,COL04 from TBL01 where COL01=\"81446e1b9e\";" | kubectl run mymaria-query --rm -i  \
+            --restart='Never'                                                                                     \
+            --image docker.io/bitnamilegacy/mariadb:12.0.2-debian-12-r0                                           \
+            --namespace mariadb-system                                                                            \
             --command -- mysql -uuser878 -ppasswd878 -h mymaria-mariadb-primary database878
 
 #################################
