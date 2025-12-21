@@ -18,4 +18,4 @@ initdbScripts:
     echo "CREATE TABLE TBL01 (COL01 char(10), COL02 char(10), COL03 char(10), COL04 char(10));" | mysql -uuser878 -ppasswd878 database878
 
 secondary:
-  replicaCount: 3
+  replicaCount: 2

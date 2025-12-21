@@ -3,6 +3,7 @@
 «« Standard MariaDB Helm chart deployment in replication mode »»
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
 
 helm show chart bitnami/mariadb --version 22.0.0
 helm show values bitnami/mariadb --version 22.0.0 > values-22.0.0.yaml
@@ -15,11 +16,11 @@ helm install mymaria bitnami/mariadb --version 22.0.0 -f values-22.0.0-mymaria.y
 helm install mymaria bitnami/mariadb --version 22.0.0 -f values-22.0.0-mymaria-mini.yaml -n mariadb-system --create-namespace
 helm upgrade mymaria bitnami/mariadb --version 22.0.0 -f values-22.0.0-mymaria-mini.yaml -n mariadb-system
 
-kc config set-context --current --namespace=mariadb-system
+kubectl config set-context --current --namespace=mariadb-system
 helm history mymaria
 
 helm delete mymaria -n mariadb-system
-kc delete ns mariadb-system
+kubectl delete ns mariadb-system
 
 kubectl run mymaria-client-0 --rm --tty -i                                \
             --restart='Never'                                             \
@@ -65,7 +66,7 @@ SQL queries:
 
 Option 1 (losing all existing DB data):
     helm delete mymaria -n mariadb-system
-    kc delete ns mariadb-system
+    kubectl delete ns mariadb-system
     helm install mymaria bitnami/mariadb --version 22.0.0 -f values-22.0.0-mymaria-mini-prometheus.yaml -n mariadb-system --create-namespace
 Or option2 (keeping DB data intact):
     helm upgrade mymaria bitnami/mariadb --version 22.0.0 -f values-22.0.0-mymaria-mini-prometheus.yaml -n mariadb-system
