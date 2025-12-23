@@ -1,0 +1,149 @@
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: scm-system
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: person0
+  namespace: scm-system
+data:
+  name: "Anna"
+  surname: "Polyeskaia"
+  age: "43"
+  hometown: "Murmansk"
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: personpod01
+  namespace: scm-system
+spec:
+  containers:
+  - name: personpod01
+    image: busybox:1.37.0
+    imagePullPolicy: IfNotPresent
+    command:
+    - bin/sh
+    - -c
+    - |
+      while : ; do
+        echo "`hostname`__`date \"+%T\"`"
+        sleep 60
+      done
+    volumeMounts:
+    - name: configmap-as-volume
+      mountPath: /personpod01-data
+  volumes:
+  - name: configmap-as-volume
+    configMap:
+      name: person0
+      optional: false
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: personpod02
+  namespace: scm-system
+spec:
+  containers:
+  - name: personpod02
+    image: busybox:1.37.0
+    imagePullPolicy: IfNotPresent
+    command:
+    - bin/sh
+    - -c
+    - |
+      while : ; do
+        echo "`hostname`__`date \"+%T\"`"
+        sleep 60
+      done
+    env:
+    - name: PERSON_NAME
+      valueFrom:
+        configMapKeyRef:
+          name: person0
+          key: name
+    - name: PERSON_SURNAME
+      valueFrom:
+        configMapKeyRef:
+          name: person0
+          key: surname
+    - name: PERSON_AGE
+      valueFrom:
+        configMapKeyRef:
+          name: person0
+          key: age
+    - name: PERSON_HOMETOWN
+      valueFrom:
+        configMapKeyRef:
+          name: person0
+          key: hometown
+
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: opaque-secret
+  namespace: scm-system
+data:
+  username: QmFydG9u       # remember:  echo -n "Barton" | base64
+  password: Y2Fib29tIQ==   # ditto
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: basic-auth-secret
+  namespace: scm-system
+type: kubernetes.io/basic-auth
+stringData:                # direct way to specify the data
+  username: Barton
+  password: caboom!
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secretspod
+  namespace: scm-system
+spec:
+  containers:
+  - name: secretspod
+    image: busybox:1.37.0
+    imagePullPolicy: IfNotPresent
+    command:
+      - bin/sh
+      - -c
+      - |
+        while : ; do
+          echo "`hostname`__`date \"+%T\"`"
+          sleep 60
+        done
+    env:
+    - name: USERNAME1
+      valueFrom:
+        secretKeyRef:
+          name: opaque-secret
+          key: username
+    - name: PASSWORD1
+      valueFrom:
+        secretKeyRef:
+          name: opaque-secret
+          key: password
+    volumeMounts:
+    - name: secret-as-volume
+      mountPath: /secretspod-data
+      readOnly: true
+  volumes:
+  - name: secret-as-volume      # advantage: automatic updates when secret changes (with some delay)
+    secret:
+      secretName: basic-auth-secret
+      optional: false

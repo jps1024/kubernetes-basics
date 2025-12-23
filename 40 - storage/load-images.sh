@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
 
+CLUSTERNAME=k2
+
 docker pull              docker.io/alpine:3.20
 kind   load docker-image docker.io/alpine:3.20 --name ${CLUSTERNAME}
