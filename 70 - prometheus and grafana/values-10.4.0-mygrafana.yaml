@@ -1,0 +1,20 @@
+image:
+  registry: docker.io
+  repository: grafana/grafana
+  tag: "12.3"
+
+testFramework:
+  enabled: false
+
+serviceAccount:
+  create: false
+
+env:
+  GF_SERVER_ROOT_URL: https://localhost:8080/grafana
+  GF_SERVER_SERVE_FROM_SUB_PATH: 'true'
+
+ingress:
+  enabled: true
+  path: /grafana
+  hosts:
+  - ""

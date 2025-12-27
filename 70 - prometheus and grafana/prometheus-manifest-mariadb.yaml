@@ -66,7 +66,7 @@ spec:
     - targetPort: 9090
       port: 9090
   type: ClusterIP
-  clusterIP: None
+  clusterIP: None  # good while we have a single pod, but might need to be changed
 
 ---
 apiVersion: networking.k8s.io/v1
