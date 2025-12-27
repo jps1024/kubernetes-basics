@@ -14,3 +14,10 @@ kubectl get cm/mygrafana -o yaml
 kubectl get secret --namespace prometheus-system mygrafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
 kubectl get ingress -A
 kubectl get ingress/mygrafana -o yaml
+
+
+kubectl run nslookuptest --rm --tty -i         \
+            --restart='Never'                  \
+            --image docker.io/busybox:1.37.0   \
+            --namespace prometheus-system      \
+            --command -- nslookup mygrafana

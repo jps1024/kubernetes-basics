@@ -39,6 +39,11 @@ kc edit cm/config
 kc delete ns nature-rs-system
 kc apply -f 33-nature-rs.yaml
 kc describe service/nature-rs-svc
+kc run nslookuptest --rm --tty -i                       \
+                    --restart='Never'                   \
+                    --image docker.io/busybox:1.37.0    \
+                    --namespace default                 \
+                    --command -- nslookup nature-rs-svc.nature-rs-system.svc.cluster.local
 
 
 ##
