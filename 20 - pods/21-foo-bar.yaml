@@ -30,7 +30,7 @@ spec:
       ports:
         - containerPort: 5678
       args:
-        - "-text=This is foo, through an Ingress Controller"
+        - "-text=This is foo, accessible through an Ingress Controller and a Service"
 
 ---
 apiVersion: v1
@@ -54,7 +54,7 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: bar-app
+  name: bar-app1
   namespace: foo-bar-system
   labels:
     app: bar
@@ -66,8 +66,25 @@ spec:
       ports:
         - containerPort: 5678
       args:
-        - "-text=This is bar, through an Ingress Controller"
+        - "-text=This is bar1, accessible through an Ingress Controller and a Service"
 
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bar-app2
+  namespace: foo-bar-system
+  labels:
+    app: bar
+spec:
+  containers:
+    - name: bar-app
+      image: docker.io/hashicorp/http-echo:0.2.3
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 5678
+      args:
+        - "-text=This is bar2, accessible through an Ingress Controller and a Service"
 ---
 apiVersion: v1
 kind: Service

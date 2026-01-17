@@ -3,6 +3,8 @@ image:
   repository: grafana/grafana
   tag: "12.3"
 
+replicas: 1
+
 testFramework:
   enabled: false
 
@@ -18,3 +20,13 @@ ingress:
   path: /grafana
   hosts:
   - ""
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      url: http://prometheus-service.prometheus-system.svc.cluster.local:9090
+      access: proxy
+      isDefault: true

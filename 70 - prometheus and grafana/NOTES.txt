@@ -15,9 +15,8 @@ kubectl get secret --namespace prometheus-system mygrafana -o jsonpath="{.data.a
 kubectl get ingress -A
 kubectl get ingress/mygrafana -o yaml
 
-
 kubectl run nslookuptest --rm --tty -i         \
             --restart='Never'                  \
             --image docker.io/busybox:1.37.0   \
-            --namespace prometheus-system      \
-            --command -- nslookup mygrafana
+            --namespace default                \
+            --command -- nslookup mygrafana.prometheus-system.svc.cluster.local
