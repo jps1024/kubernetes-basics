@@ -21,7 +21,8 @@ data:
         - job_name: 'mariadb'
           scrape_interval: 15s
           static_configs:
-            - targets: ['mymaria-mariadb-primary.mariadb-system.svc.cluster.local:9104']
+            - targets: ['mymaria-mariadb-primary.mariadb-system.svc.cluster.local:9104',
+                        'mymaria-mariadb-secondary.mariadb-system.svc.cluster.local:9104']
 
 ---
 apiVersion: v1

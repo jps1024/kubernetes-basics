@@ -27,6 +27,6 @@ datasources:
     datasources:
     - name: Prometheus
       type: prometheus
-      url: http://prometheus-service.prometheus-system.svc.cluster.local:9090
+      url: http://prometheus-service.prometheus-system.svc.cluster.local:9090/prometheus/
       access: proxy
       isDefault: true

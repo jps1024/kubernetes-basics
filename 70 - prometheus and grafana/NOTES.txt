@@ -1,6 +1,5 @@
 
 kubectl apply -f prometheus-manifest-mariadb.yaml
-
 kubectl config set-context --current --namespace=prometheus-system
 
 helm repo add grafana https://grafana.github.io/helm-charts
@@ -20,3 +19,13 @@ kubectl run nslookuptest --rm --tty -i         \
             --image docker.io/busybox:1.37.0   \
             --namespace default                \
             --command -- nslookup mygrafana.prometheus-system.svc.cluster.local
+
+kubectl run alpinecurl --rm --tty -i            \
+            --restart='Never'                   \
+            --image docker.io/alpine/curl:3.14  \
+            --namespace mariadb-system          \
+            --command -- curl http://prometheus-service.prometheus-system.svc.cluster.local:9090/api/v1/query
+
+
+SC1ZJhtVP2vz5TFvzS1B336OWa1hAufN5XKRKnpx
+hcjM8l6LTxtmTTwsM8eC8K6vP606FtQFV4q7LLKN

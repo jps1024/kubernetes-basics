@@ -77,7 +77,7 @@ kubectl run alpinecurl --rm --tty -i            \
             --namespace mariadb-system          \
             --command -- curl http://mymaria-mariadb-primary.mariadb-system.svc.cluster.local:9104/metrics
 
-grep -v '#' mariadb-metrics
+grep -v '#' mariadb-metrics.txt
 
 kubectl run alpinecurl --rm --tty -i            \
             --restart='Never'                   \
