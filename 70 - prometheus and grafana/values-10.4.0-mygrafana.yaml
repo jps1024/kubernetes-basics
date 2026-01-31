@@ -3,7 +3,7 @@ image:
   repository: grafana/grafana
   tag: "12.3"
 
-replicas: 1
+replicas: 1  # increasing the nr of replicas requires a bit more work (shared DB, etc.)
 
 testFramework:
   enabled: false

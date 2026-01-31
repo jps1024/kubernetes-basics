@@ -21,4 +21,5 @@ for (( i=0; i<21000; i++ )); do
     d=$(randomstring10)
     echo "INSERT INTO TBL01 (COL01,COL02,COL03,COL04) VALUES (\"${a}\",\"${b}\",\"${c}\",\"${d}\");"
 done
+
 exit 0
